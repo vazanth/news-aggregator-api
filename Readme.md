@@ -31,6 +31,10 @@ Before you begin, ensure you have met the following requirements:
 
 1. Clone this repository
 
+```bash
+git clone https://github.com/vazanth/news-aggregator-api.git
+```
+
 2. Install dependencies
 
 ```bash
@@ -53,18 +57,68 @@ This project uses the express-validator library for input validation. Validation
 
 # Endpoints
 
-|                      Endpoint | Description                                                                     |
-| ----------------------------: | :------------------------------------------------------------------------------ |
-|    `POST /api/users/sign-up ` | Register a new user.                                                            |
-|     `POST /api/users/sign-in` | Log in a user.                                                                  |
-|    `POST /api/users/sign-out` | Logout a user                                                                   |
-|  `GET /api/users/preferences` | Retrieve the news preferences for the logged-in user.                           |
-|  `PUT /api/users/preferences` | Update the news preferences for the logged-in user.                             |
-|               `GET /api/news` | Fetch news articles based on the logged-in user's preferences.                  |
-|          `GET /api/news/read` | Fecth news areticles that are read by the user                                  |
-|      `GET /api/news/favorite` | Fecth news areticles that are marker as favorite by the user                    |
-| `GET /api/news/top-headlines` | Fetch top-news articles based on the logged-in user's preferences.              |
-|      `POST /api/:newsId/read` | Mark a article as read for a user                                               |
-|  `POST /api/:newsId/favorite` | Mark a article as favorite for a user                                           |
-|    `POST /api/schedule/start` | Start the schedule for fetching news api for logged-in user only by admin users |
-|     `POST /api/schedule/stop` | stop the schedule for fetching news api for logged-in user only by admin users  |
+|                      Endpoint | Description                                                                     | Payload               |
+| ----------------------------: | :------------------------------------------------------------------------------ | :-------------------- |
+|    `POST /api/users/sign-up ` | Register a new user.                                                            | [sign-up](#sign-up)   |
+|     `POST /api/users/sign-in` | Log in a user.                                                                  | [sign-in](#sign-in)   |
+|    `POST /api/users/sign-out` | Logout a user                                                                   |                       |
+|  `GET /api/users/preferences` | Retrieve the news preferences for the logged-in user.                           |                       |
+|  `PUT /api/users/preferences` | Update the news preferences for the logged-in user.                             | [upd-pref](#upd-pref) |
+|               `GET /api/news` | Fetch news articles based on the logged-in user's preferences.                  |                       |
+|          `GET /api/news/read` | Fecth news areticles that are read by the user                                  |                       |
+|      `GET /api/news/favorite` | Fecth news areticles that are marker as favorite by the user                    |                       |
+| `GET /api/news/top-headlines` | Fetch top-news articles based on the logged-in user's preferences.              |                       |
+|      `POST /api/:newsId/read` | Mark a article as read for a user                                               |                       |
+|  `POST /api/:newsId/favorite` | Mark a article as favorite for a user                                           |                       |
+|    `POST /api/schedule/start` | Start the schedule for fetching news api for logged-in user only by admin users | [schedule](#schedule) |
+|     `POST /api/schedule/stop` | stop the schedule for fetching news api for logged-in user only by admin users  |                       |
+
+## Payload Sample
+
+# sign-up
+
+```bash
+  {
+    "fullname": "adminuser",
+    "email": "admin@gmail.com",
+    "password": "Test12@4",
+    "confirmPassword": "Test12@4",
+    "role": "admin",
+    "preferences": {
+        "categories": ["technology"],
+        "sources": ["abc-news", "bbc-news"]
+    }
+  }
+```
+
+# sign-in
+
+```bash
+  {
+    "email": "admin@gmail.com",
+    "password": "Test12@4"
+}
+```
+
+# upd-pref
+
+```bash
+  {
+    "categories": [
+        "technology"
+    ],
+    "sources": [
+        "abc-news",
+        "bbc-news"
+    ]
+  }
+```
+
+# schedule
+
+```bash
+  {
+    "scheduleType": "hourly",
+    "scheduleValue": 1
+}
+```

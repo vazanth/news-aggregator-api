@@ -1,5 +1,5 @@
 const { body, param } = require('express-validator');
-const { categories, sources, roles } = require('../data/preferences');
+const { categories, sources, roles } = require('../data/constants');
 
 const validateSignUp = [
   body('fullname')
@@ -27,6 +27,9 @@ const validateSignUp = [
     return true;
   }),
   body('role').custom((value) => {
+    if (!value) {
+      return true;
+    }
     if (!roles.includes(value?.toLowerCase())) {
       throw new Error('not a valid role, it can be either user or admin');
     }
@@ -130,11 +133,29 @@ const validatePreferences = [
 ];
 
 const validateNewsParams = [
-  param('newsId')
-    .isAlphanumeric()
-    .withMessage('param ID must be alphanumeric')
-    .isLength({ min: 36, max: 36 })
-    .withMessage('not a valid news id'),
+  param('newsId').isAlphanumeric().withMessage('param ID must be alphanumeric'),
+];
+
+const validateSchedule = [
+  body('scheduleType')
+    .isString()
+    .notEmpty()
+    .withMessage('schedule type cannot be empty')
+    .isIn(['hourly', 'daily'])
+    .withMessage('Invalid scheduleType, values can be either hourly or daily'),
+  body('scheduleValue')
+    .notEmpty()
+    .withMessage('schedule value cannot be empty')
+    .custom((value, { req }) => {
+      const { scheduleType } = req.body;
+      if (scheduleType === 'hourly' && (value < 0 || value > 6)) {
+        throw new Error('Hourly schedule value must be between 0 and 6.');
+      }
+      if (scheduleType === 'daily' && (value < 0 || value > 23)) {
+        throw new Error('Daily schedule value must be between 0 and 23.');
+      }
+      return true;
+    }),
 ];
 
 module.exports = {
@@ -142,4 +163,5 @@ module.exports = {
   validateSignIn,
   validatePreferences,
   validateNewsParams,
+  validateSchedule,
 };

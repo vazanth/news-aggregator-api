@@ -5,12 +5,13 @@ const catchError = require('../helpers/catchError');
 const AppResponse = require('../helpers/AppResponse');
 const { writeFile, readFile } = require('../helpers/fileOperations');
 const cacheManager = require('../helpers/cacheManager');
+const { commonResponseMessages } = require('../data/constants');
 
 const signUp = catchError(async (req, res, next) => {
   const { fullname, email, password, preferences, role } = req.body;
   const userData = await readFile();
   if (userData.users.find((user) => user.email === email)) {
-    throw new AppResponse('email already exist', 400);
+    throw new AppResponse(commonResponseMessages.EMAIL_EXIST);
   }
   const hashedPassword = await argon2.hash(password);
   const payload = {
@@ -23,7 +24,7 @@ const signUp = catchError(async (req, res, next) => {
   };
   userData.users.push(payload);
   await writeFile(JSON.stringify(userData));
-  return next(new AppResponse('registered successfully', 201));
+  return next(new AppResponse(commonResponseMessages.REGISTERED_SUCCESSFULLY));
 });
 
 const signIn = catchError(async (req, res, next) => {
@@ -31,11 +32,11 @@ const signIn = catchError(async (req, res, next) => {
   const userData = await readFile();
   const user = userData.users.find((user) => user.email === email);
   if (!user) {
-    throw new AppResponse('email id or password incorrect', 500);
+    throw new AppResponse(commonResponseMessages.AUTH_INCORRECT);
   }
   const isPasswordMatch = await argon2.verify(user.password, password);
   if (!isPasswordMatch) {
-    throw new AppResponse('email id or password incorrect', 500);
+    throw new AppResponse(commonResponseMessages.AUTH_INCORRECT);
   }
   signToken(user, res, next);
 });
@@ -43,7 +44,7 @@ const signIn = catchError(async (req, res, next) => {
 const signOut = (req, res, next) => {
   let userId = req.userId;
   cacheManager.delete(`${userId}-loggedIn`);
-  return next(new AppResponse('Logged out succesfully', 200));
+  return next(new AppResponse(commonResponseMessages.LOGGED_OUT));
 };
 
 const getUserPreferences = catchError(async (req, res, next) => {
@@ -53,7 +54,12 @@ const getUserPreferences = catchError(async (req, res, next) => {
     (user) => user.id === userId
   )?.preferences;
 
-  next(new AppResponse('Fetched successfully', 200, currentUserPrefences));
+  next(
+    new AppResponse(
+      commonResponseMessages.FETCHED_SUCCESSFULLY,
+      currentUserPrefences
+    )
+  );
 });
 
 const updateUserPreferences = catchError(async (req, res, next) => {
@@ -64,13 +70,13 @@ const updateUserPreferences = catchError(async (req, res, next) => {
   const userIndex = result.users.findIndex((user) => user.id === userId);
 
   if (userIndex === -1) {
-    throw new AppResponse('user data not found', 500);
+    throw new AppResponse(commonResponseMessages.NOT_FOUND);
   }
 
   result.users[userIndex].preferences = preferences;
 
   await writeFile(JSON.stringify(result));
-  return next(new AppResponse('updated successfully', 201));
+  return next(new AppResponse(commonResponseMessages.UPDATED_SUCCESSFULLY));
 });
 
 module.exports = {

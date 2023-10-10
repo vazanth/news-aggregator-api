@@ -1,22 +1,37 @@
 const schedule = require('node-schedule');
 const AppResponse = require('../helpers/AppResponse');
 const { updateNewsCache } = require('../services/newsService');
+const { commonResponseMessages } = require('../data/constants');
 
 let jobName = null;
 
+const convertToCron = (scheduleType, scheduleValue) => {
+  let cronExpression = '';
+
+  if (scheduleType === 'daily') {
+    cronExpression = `0 ${scheduleValue} * * *`;
+  } else if (scheduleType === 'hourly') {
+    cronExpression = `0 */${scheduleValue} * * *`;
+  } else {
+    throw new Error('Invalid schedule type');
+  }
+
+  return cronExpression;
+};
+
 const startSchedule = (req, res, next) => {
+  const { scheduleType, scheduleValue } = req.body;
   if (!jobName) {
-    // Defined the cron schedule: run the update news cache function every 2 hours at minute 0
-    const cronSchedule = '50 * * * *';
+    const cronSchedule = convertToCron(scheduleType, scheduleValue);
 
     jobName = schedule.scheduleJob(cronSchedule, () => {
       updateNewsCache();
     });
 
-    return next(new AppResponse('Schedule started succesfully', 200));
+    return next(new AppResponse(commonResponseMessages.SCHEDULE_STARTED));
   }
 
-  return next(new AppResponse('Schedule is already running', 200));
+  return next(new AppResponse(commonResponseMessages.SCHEDULE_AL_RUNNING));
 };
 
 const stopSchedule = (req, res, next) => {
@@ -24,10 +39,10 @@ const stopSchedule = (req, res, next) => {
     jobName.cancel();
     jobName = null;
 
-    return next(new AppResponse('Schedule stopped succesfully', 200));
+    return next(new AppResponse(commonResponseMessages.SCHEDULE_STOPPED));
   }
 
-  return next(new AppResponse('Schedule is already stopped', 200));
+  return next(new AppResponse(commonResponseMessages.SCHEDULE_AL_STOPPED));
 };
 
 module.exports = { startSchedule, stopSchedule };

@@ -14,7 +14,7 @@ const router = express.Router();
 
 router.use(verifyToken);
 
-router.route('/').get(getNews);
+router.get('/', getNews);
 
 router.get('/read', getReadNews);
 
