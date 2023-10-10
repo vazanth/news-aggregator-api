@@ -1,6 +1,7 @@
 const axios = require('axios');
 const cacheManager = require('../helpers/cacheManager');
 const { NEWS_API_KEY } = require('../config');
+const AppResponse = require('../helpers/AppResponse');
 const fetchAllNews = async (params) => {
   const options = {
     method: 'GET',
@@ -12,13 +13,14 @@ const fetchAllNews = async (params) => {
 
   try {
     const result = await axios.request(options);
-    // adding news id field to result for user mapping
     return result.data.articles.map((item, index) => ({
       ...item,
       id: `AllNews-${index}`,
     }));
   } catch (error) {
-    console.log('error', error.message);
+    const errorMessage = error?.response?.data?.message || error.message;
+    const statusCode = error?.response?.status || 500;
+    throw new AppResponse(errorMessage, null, statusCode);
   }
 };
 
@@ -35,7 +37,9 @@ const fetchTopHeadlines = async (params) => {
     const result = await axios.request(options);
     return result.data.articles;
   } catch (error) {
-    console.log('error', error.message);
+    const errorMessage = error?.response?.data?.message || error.message;
+    const statusCode = error?.response?.status || 500;
+    throw new AppResponse(errorMessage, null, statusCode);
   }
 };
 

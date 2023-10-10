@@ -1,4 +1,5 @@
 const AppResponse = require('../helpers/AppResponse');
+const { commonResponseMessages } = require('../data/constants');
 
 const sendResponse = (result, res) => {
   if (result.isOperational) {
@@ -18,10 +19,10 @@ const sendResponse = (result, res) => {
 };
 
 const handleJWTError = () =>
-  new AppResponse('Invalid Token Please login again!!', 401);
+  new AppResponse(commonResponseMessages.INVALID_TOKEN);
 
 const handleJWTExpiredError = () =>
-  new AppResponse('Token Expired, Please login again!!', 401, null);
+  new AppResponse(commonResponseMessages.EXPIRED_TOKEN);
 
 const responseMiddleware = (result, req, res, next) => {
   if (result instanceof AppResponse) {
@@ -29,7 +30,10 @@ const responseMiddleware = (result, req, res, next) => {
     return;
   } else if (result.message === 'jwt expired') {
     result = handleJWTExpiredError();
-  } else if (result.message === 'invalid token') {
+  } else if (
+    result.message === 'invalid token' ||
+    result.message === 'invalid signature'
+  ) {
     result = handleJWTError();
   }
 

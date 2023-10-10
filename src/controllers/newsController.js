@@ -3,6 +3,7 @@ const catchError = require('../helpers/catchError');
 const AppResponse = require('../helpers/AppResponse');
 const { fetchAllNews, fetchTopHeadlines } = require('../services/newsService');
 const { readFile, writeFile } = require('../helpers/fileOperations');
+const { commonResponseMessages } = require('../data/constants');
 
 const getNews = catchError(async (req, res, next) => {
   const { id, preferences } = req.user;
@@ -10,7 +11,10 @@ const getNews = catchError(async (req, res, next) => {
   const cachedNews = cacheManager.get(`${id}-AllNews`);
   if (cachedNews) {
     return next(
-      new AppResponse('Fetched Successfully', 200, JSON.parse(cachedNews))
+      new AppResponse(
+        commonResponseMessages.FETCHED_SUCCESSFULLY,
+        JSON.parse(cachedNews)
+      )
     );
   }
 
@@ -18,7 +22,9 @@ const getNews = catchError(async (req, res, next) => {
   const result = await fetchAllNews(preferences.sources.join(', '));
   cacheManager.set(`${id}-AllNews`, JSON.stringify(result));
 
-  return next(new AppResponse('Fetched Successfully', 200, result));
+  return next(
+    new AppResponse(commonResponseMessages.FETCHED_SUCCESSFULLY, result)
+  );
 });
 
 const getTopHeadlines = catchError(async (req, res, next) => {
@@ -27,7 +33,10 @@ const getTopHeadlines = catchError(async (req, res, next) => {
   const cachedNews = cacheManager.get(`${id}-TopNews`);
   if (cachedNews) {
     return next(
-      new AppResponse('Fetched Successfully', 200, JSON.parse(cachedNews))
+      new AppResponse(
+        commonResponseMessages.FETCHED_SUCCESSFULLY,
+        JSON.parse(cachedNews)
+      )
     );
   }
 
@@ -35,7 +44,9 @@ const getTopHeadlines = catchError(async (req, res, next) => {
   const result = await fetchTopHeadlines(preferences.categories.join(', '));
   cacheManager.set(`${id}-TopNews`, JSON.stringify(result));
 
-  return next(new AppResponse('Fetched Successfully', 200, result));
+  return next(
+    new AppResponse(commonResponseMessages.FETCHED_SUCCESSFULLY, result)
+  );
 });
 
 const getReadNews = catchError(async (req, res, next) => {
@@ -45,8 +56,8 @@ const getReadNews = catchError(async (req, res, next) => {
 
   const readArticlesId = currentUser?.articles?.read;
 
-  if (readArticlesId && readArticlesId.length === 0) {
-    return next(new AppResponse('No articles are read', 200, null));
+  if (!readArticlesId || readArticlesId?.length === 0) {
+    return next(new AppResponse(commonResponseMessages.NO_DATA_FOUND, null));
   }
 
   // if available in cache filter and share
@@ -56,7 +67,12 @@ const getReadNews = catchError(async (req, res, next) => {
     const filteredArticles = parsedData.filter((article) =>
       readArticlesId.includes(article.id)
     );
-    return next(new AppResponse('Fetched Successfully', 200, filteredArticles));
+    return next(
+      new AppResponse(
+        commonResponseMessages.FETCHED_SUCCESSFULLY,
+        filteredArticles
+      )
+    );
   }
 
   const result = await fetchAllNews(preferences.sources.join(', '));
@@ -65,7 +81,12 @@ const getReadNews = catchError(async (req, res, next) => {
   const filteredArticles = result.filter((article) =>
     readArticlesId.includes(article.id)
   );
-  return next(new AppResponse('Fetched Successfully', 200, filteredArticles));
+  return next(
+    new AppResponse(
+      commonResponseMessages.FETCHED_SUCCESSFULLY,
+      filteredArticles
+    )
+  );
 });
 
 const getFavoriteNews = catchError(async (req, res, next) => {
@@ -73,10 +94,10 @@ const getFavoriteNews = catchError(async (req, res, next) => {
   const userData = await readFile();
   const currentUser = userData.users.find((user) => user.id === id);
 
-  const favoriteArticlesId = currentUser.articles.favorite;
+  const favoriteArticlesId = currentUser?.articles?.favorite;
 
-  if (favoriteArticlesId && favoriteArticlesId.length === 0) {
-    return next(new AppResponse('No articles are read', 200, null));
+  if (!favoriteArticlesId || favoriteArticlesId?.length === 0) {
+    return next(new AppResponse(commonResponseMessages.NO_DATA_FOUND));
   }
 
   // if available in cache filter and share
@@ -86,7 +107,12 @@ const getFavoriteNews = catchError(async (req, res, next) => {
     const filteredArticles = parsedData.filter((article) =>
       favoriteArticlesId.includes(article.id)
     );
-    return next(new AppResponse('Fetched Successfully', 200, filteredArticles));
+    return next(
+      new AppResponse(
+        commonResponseMessages.FETCHED_SUCCESSFULLY,
+        filteredArticles
+      )
+    );
   }
 
   const result = await fetchAllNews(preferences.sources.join(', '));
@@ -95,7 +121,12 @@ const getFavoriteNews = catchError(async (req, res, next) => {
   const filteredArticles = result.filter((article) =>
     favoriteArticlesId.includes(article.id)
   );
-  return next(new AppResponse('Fetched Successfully', 200, filteredArticles));
+  return next(
+    new AppResponse(
+      commonResponseMessages.FETCHED_SUCCESSFULLY,
+      filteredArticles
+    )
+  );
 });
 
 const markArticleAsRead = catchError(async (req, res, next) => {
@@ -119,7 +150,7 @@ const markArticleAsRead = catchError(async (req, res, next) => {
 
   await writeFile(JSON.stringify(userData));
 
-  return next(new AppResponse('Article marked as read', 200));
+  return next(new AppResponse(commonResponseMessages.CREATED_SUCCESSFULLY));
 });
 
 const makeArticleAsFavorite = catchError(async (req, res, next) => {
@@ -143,7 +174,7 @@ const makeArticleAsFavorite = catchError(async (req, res, next) => {
 
   await writeFile(JSON.stringify(userData));
 
-  return next(new AppResponse('Article marked as favorite', 200));
+  return next(new AppResponse(commonResponseMessages.CREATED_SUCCESSFULLY));
 });
 
 module.exports = {

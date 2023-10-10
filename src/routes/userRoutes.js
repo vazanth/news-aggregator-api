@@ -6,10 +6,7 @@ const {
   getUserPreferences,
   updateUserPreferences,
 } = require('../controllers/userController');
-const {
-  handleSignUpValidation,
-  handleSignInValidation,
-} = require('../middleware/userMiddleware');
+const handleValidation = require('../middleware/validateMiddleware');
 const {
   validateSignUp,
   validateSignIn,
@@ -19,9 +16,9 @@ const { verifyToken } = require('../controllers/authController');
 
 const router = express.Router();
 
-router.post('/sign-up', validateSignUp, handleSignUpValidation, signUp);
+router.post('/sign-up', validateSignUp, handleValidation, signUp);
 
-router.post('/sign-in', validateSignIn, handleSignInValidation, signIn);
+router.post('/sign-in', validateSignIn, handleValidation, signIn);
 
 // this middleware take's care of protecting routes below this
 router.use(verifyToken);

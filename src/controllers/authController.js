@@ -5,16 +5,20 @@ const AppResponse = require('../helpers/AppResponse');
 const catchError = require('../helpers/catchError');
 const { readFile } = require('../helpers/fileOperations');
 const cacheManager = require('../helpers/cacheManager');
+const { commonResponseMessages } = require('../data/constants');
 
 const signToken = (user, res, next) => {
   const token = jwt.sign(user, JWT_SECRET_KEY, {
     expiresIn: JWT_EXPIRES_IN,
   });
   const { password, ...rest } = user;
-  const successResponse = new AppResponse('Request successful', 200, {
-    ...rest,
-    token,
-  });
+  const successResponse = new AppResponse(
+    commonResponseMessages.CREATED_SUCCESSFULLY,
+    {
+      ...rest,
+      token,
+    }
+  );
 
   // caching the logged-in user for schedulers
   cacheManager.set(`${user.id}-loggedIn`, user.preferences);
@@ -25,7 +29,7 @@ const signToken = (user, res, next) => {
 const verifyToken = catchError(async (req, res, next) => {
   let token = '';
   if (!req?.headers?.authorization?.startsWith('Bearer')) {
-    return next(new AppResponse('User not logged in, Please login!!', 401));
+    return next(new AppResponse(commonResponseMessages.USER_NOT_LOGGED_IN));
   }
   token = req.headers.authorization.split(' ')[1];
 
@@ -36,9 +40,7 @@ const verifyToken = catchError(async (req, res, next) => {
   const currentUser = userData.users.find((user) => user.id === decodeToken.id);
 
   if (!currentUser) {
-    return next(
-      new AppResponse('User Belong to this token does not exist anymore', 401)
-    );
+    return next(new AppResponse(commonResponseMessages.NOT_FOUND));
   }
 
   req.user = currentUser;
@@ -48,9 +50,7 @@ const verifyToken = catchError(async (req, res, next) => {
 
 const restrictTo = (role) => (req, res, next) => {
   if (role !== req.user.role) {
-    throw next(
-      new AppResponse("You don't have access to perform this action", 403)
-    );
+    throw next(new AppResponse(commonResponseMessages.NOT_AUTHORIZED));
   }
   next();
 };
