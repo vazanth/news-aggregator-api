@@ -41,7 +41,16 @@ git clone https://github.com/vazanth/news-aggregator-api.git
 npm install
 ```
 
-3. Run Server
+3. Inside src/data folder add a users.json file keep the below json format in the file
+
+```
+  {
+    "users": []
+  }
+
+```
+
+4. Run Server
 
 ```bash
 npm run dev

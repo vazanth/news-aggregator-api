@@ -29,7 +29,7 @@ const signToken = (user, res, next) => {
 const verifyToken = catchError(async (req, res, next) => {
   let token = '';
   if (!req?.headers?.authorization?.startsWith('Bearer')) {
-    return next(new AppResponse(commonResponseMessages.USER_NOT_LOGGED_IN));
+    return next(new AppResponse(commonResponseMessages.NOT_LOGGED_IN));
   }
   token = req.headers.authorization.split(' ')[1];
 
