@@ -1,6 +1,11 @@
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
-const { JWT_EXPIRES_IN, JWT_SECRET_KEY } = require('../config');
+const {
+  JWT_EXPIRES_IN,
+  JWT_SECRET_KEY,
+  VERIFICATION_SECRET_KEY,
+  VERIFICATION_CODE_EXPIRES_IN,
+} = require('../config');
 const AppResponse = require('../helpers/AppResponse');
 const catchError = require('../helpers/catchError');
 const { readFile } = require('../helpers/fileOperations');
@@ -24,6 +29,25 @@ const signToken = (user, res, next) => {
   cacheManager.set(`${user.id}-loggedIn`, user.preferences);
 
   return next(successResponse);
+};
+
+const createverificationToken = (user) => {
+  const token = jwt.sign(user, VERIFICATION_SECRET_KEY, {
+    expiresIn: VERIFICATION_CODE_EXPIRES_IN,
+  });
+  return token;
+};
+
+const verifyConfirmationToken = async (token) => {
+  try {
+    const decodeToken = await promisify(jwt.verify)(
+      token,
+      VERIFICATION_SECRET_KEY
+    );
+    return decodeToken;
+  } catch (error) {
+    return error.message;
+  }
 };
 
 const verifyToken = catchError(async (req, res, next) => {
@@ -55,4 +79,10 @@ const restrictTo = (role) => (req, res, next) => {
   next();
 };
 
-module.exports = { signToken, verifyToken, restrictTo };
+module.exports = {
+  signToken,
+  verifyToken,
+  verifyConfirmationToken,
+  createverificationToken,
+  restrictTo,
+};
