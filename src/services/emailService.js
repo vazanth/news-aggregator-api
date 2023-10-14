@@ -51,7 +51,7 @@ class Email {
     try {
       await this.prepareTransport().sendMail(mailOptions);
     } catch (error) {
-      console.log('err', error);
+      console.error('err', error);
     }
   }
 
