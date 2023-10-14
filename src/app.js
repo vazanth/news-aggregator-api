@@ -5,10 +5,27 @@ const scheduleRouter = require('./routes/scheduleRoutes');
 const responseMiddleware = require('./middleware/responseMiddleware');
 const AppResponse = require('./helpers/AppResponse');
 const { commonResponseMessages } = require('./data/constants');
+const rateLimiter = require('./helpers/rateLimiter');
+const logger = require('./services/loggerService');
+
 const app = express();
 
 // middleware for parsing request
 app.use(express.json());
+
+// rate limiter
+app.use('/api', rateLimiter);
+
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const elapsedTime = Date.now() - start;
+    logger.info(
+      `Method: ${req.method} url: ${req.url} status: ${res.statusCode} responseTime: ${elapsedTime}ms userAgent: ${req.headers['user-agent']}`
+    );
+  });
+  next();
+});
 
 // api routes
 app.use('/api/users', userRouter);
