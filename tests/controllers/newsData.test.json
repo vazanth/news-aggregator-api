@@ -1,0 +1,43 @@
+[
+  {
+    "source": {
+      "id": "bbc-news",
+      "name": "BBC News"
+    },
+    "author": null,
+    "title": "Raiders edge past Packers to snap losing streak",
+    "description": "The Las Vegas Raiders intercept the Green Bay Packers quarterback Jordan Love three times as they pick up their second win of the season.",
+    "url": "https://www.bbc.co.uk/sport/american-football/67062543",
+    "publishedAt": "2023-10-10T06:20:45Z",
+    "content": "The Las Vegas Raiders recorded their first win over the Green Bay Packers in 36 years\r\n<table><tr><th>NFL 2023 regular season</th></tr>\r\n<tr><td>Dates: 7 September 2023 - 7 January 2024</td></tr><tr>… [+1370 chars]",
+    "id": "AllNews-0"
+  },
+  {
+    "source": {
+      "id": "the-washington-post",
+      "name": "The Washington Post"
+    },
+    "author": "Andrew Jeong, Kelly Kasulis Cho, Frances Vinall, Miriam Berger, Sufian Taha, Dan Lamothe, Joyce Lau, Jonathan Edwards, Shira Rubin, Sarah Dadouch, Steve Hendrix, John Hudson, Tyler Pager, Yasmeen Abutaleb",
+    "title": "Israel-Hamas war latest news and Gaza updates: Biden to visit Israel - The Washington Post",
+    "description": "President Biden will visit Israel on Wednesday to show solidarity and address the growing humanitarian needs of civilians in Gaza. A trip to Jordan will follow.",
+    "url": "https://www.washingtonpost.com/world/2023/10/17/israel-hamas-war-news-gaza/",
+    "urlToImage": "https://www.washingtonpost.com/wp-apps/imrs.php?src=https://d1i4t8bqe7zgj6.cloudfront.net/10-17-2023/t_89c379fdb9ae42609cdf43de7d214249_name_biden_blinken.png&w=1440",
+    "publishedAt": "2023-10-17T08:21:22Z",
+    "content": null,
+    "id": "AllNews-1"
+  },
+  {
+    "source": {
+      "id": "usa-today",
+      "name": "USA Today"
+    },
+    "author": "USA TODAY",
+    "title": "Israel Hamas war updates: Families of hostages are notified - USA TODAY",
+    "description": null,
+    "url": "https://www.usatoday.com/story/news/world/2023/10/15/israel-hamas-war-live-updates/71194572007/",
+    "urlToImage": null,
+    "publishedAt": "2023-10-17T08:34:45Z",
+    "content": null,
+    "id": "AllNews-3"
+  }
+]

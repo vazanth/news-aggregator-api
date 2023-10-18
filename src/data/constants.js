@@ -60,6 +60,7 @@ const commonResponseMessages = {
   EMAIL_EXIST: 'Email already exist',
   AUTH_INCORRECT: 'Email or Password is incorrect',
   SERVER_ERROR: 'Something went wrong!!',
+  ARTICLE_EXIST: 'Article Already Exists!!',
 };
 
 const statusMappings = {
@@ -85,6 +86,7 @@ const statusMappings = {
   EMAIL_EXIST: 409,
   AUTH_INCORRECT: 401,
   SERVER_ERROR: 500,
+  ARTICLE_EXIST: 409,
 };
 
 module.exports = {

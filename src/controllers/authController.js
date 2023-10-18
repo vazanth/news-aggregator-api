@@ -61,7 +61,9 @@ const verifyToken = catchError(async (req, res, next) => {
   const decodeToken = await promisify(jwt.verify)(token, JWT_SECRET_KEY);
 
   const userData = await readFile();
-  const currentUser = userData.users.find((user) => user.id === decodeToken.id);
+  const currentUser = userData.users.find(
+    (user) => user.id === decodeToken?.id
+  );
 
   if (!currentUser) {
     return next(new AppResponse(commonResponseMessages.NOT_FOUND));
@@ -74,7 +76,7 @@ const verifyToken = catchError(async (req, res, next) => {
 
 const restrictTo = (role) => (req, res, next) => {
   if (role !== req.user.role) {
-    throw next(new AppResponse(commonResponseMessages.NOT_AUTHORIZED));
+    return next(new AppResponse(commonResponseMessages.NOT_AUTHORIZED));
   }
   next();
 };

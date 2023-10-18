@@ -1,11 +1,3 @@
-const {
-  signUp,
-  signIn,
-  signOut,
-} = require('../../src/controllers/userController');
-const AppResponse = require('../../src/helpers/AppResponse');
-const { commonResponseMessages } = require('../../src/data/constants');
-
 jest.mock('../../src/helpers/fileOperations', () => ({
   readFile: jest.fn(),
   writeFile: jest.fn(),
@@ -19,6 +11,7 @@ jest.mock('argon2', () => ({
 jest.mock('../../src/controllers/authController', () => ({
   signToken: jest.fn(),
   createverificationToken: jest.fn(),
+  verifyConfirmationToken: jest.fn(),
 }));
 
 jest.mock('../../src/helpers/cacheManager', () => ({
@@ -28,17 +21,9 @@ jest.mock('../../src/helpers/cacheManager', () => ({
 jest.mock('../../src/services/emailService', () => {
   return jest.fn().mockImplementation(() => ({
     sendConfirmation: jest.fn(),
+    sendWelcome: jest.fn(),
   }));
 });
-
-const { readFile, writeFile } = require('../../src/helpers/fileOperations');
-const argon2 = require('argon2');
-const {
-  signToken,
-  createverificationToken,
-} = require('../../src/controllers/authController');
-const cacheManager = require('../../src/helpers/cacheManager');
-const Email = require('../../src/services/emailService');
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -48,27 +33,58 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
-describe('sign-up flow', () => {
-  it('should handle valid sign-up request', async () => {
-    const req = {
-      get: function (headerName) {
-        if (headerName.toLowerCase() === 'host') {
-          return 'localhost';
-        }
-      },
-      body: {
-        fullname: 'test',
-        email: 'test@gmail.com',
-        role: 'user',
-        password: 'Test123',
-        preferences: {
-          categories: ['technology'],
-          sources: ['abc-news', 'bbc-news'],
-        },
-      },
-    };
-    const next = jest.fn();
+const { readFile, writeFile } = require('../../src/helpers/fileOperations');
+const argon2 = require('argon2');
+const {
+  signToken,
+  createverificationToken,
+  verifyConfirmationToken,
+} = require('../../src/controllers/authController');
+const cacheManager = require('../../src/helpers/cacheManager');
+const Email = require('../../src/services/emailService');
+const {
+  signUp,
+  signIn,
+  signOut,
+  getUserPreferences,
+  updateUserPreferences,
+  confirmUser,
+} = require('../../src/controllers/userController');
+const AppResponse = require('../../src/helpers/AppResponse');
+const { commonResponseMessages } = require('../../src/data/constants');
 
+let req = '';
+let next = '';
+
+beforeEach(() => {
+  req = {
+    get: function (headerName) {
+      if (headerName.toLowerCase() === 'host') {
+        return 'localhost';
+      }
+    },
+    body: {
+      fullname: 'test',
+      email: 'test@gmail.com',
+      role: 'user',
+      password: 'Test123',
+      preferences: {
+        categories: ['technology'],
+        sources: ['abc-news', 'bbc-news'],
+      },
+    },
+  };
+  next = jest.fn();
+});
+
+afterEach(() => {
+  req = null;
+  next = null;
+  jest.clearAllMocks();
+});
+
+describe('User Sign-up', () => {
+  it('should handle valid sign-up request', async () => {
     await readFile.mockResolvedValue({ users: [] });
     await writeFile.mockResolvedValue();
     await createverificationToken.mockResolvedValue('mockedstring');
@@ -91,36 +107,22 @@ describe('sign-up flow', () => {
     );
   });
 
-  // it('should handle sign-up with existing email', async () => {
-  //   const req = {
-  //     body: {
-  //       fullname: 'test',
-  //       email: 'test@gmail.com',
-  //       role: 'user',
-  //       password: 'Test123',
-  //       preferences: {
-  //         categories: ['technology'],
-  //         sources: ['abc-news', 'bbc-news'],
-  //       },
-  //     },
-  //   };
-  //   const next = jest.fn();
+  it('should handle sign-up with existing email', async () => {
+    readFile.mockResolvedValue({
+      users: [{ email: 'test@gmail.com' }],
+    });
 
-  //   readFile.mockResolvedValue({
-  //     users: [{ email: 'test@gmail.com' }],
-  //   });
+    await signUp(req, null, next);
 
-  //   await signUp(req, null, next);
-
-  //   expect(readFile).toHaveBeenCalled();
-  //   expect(writeFile).not.toHaveBeenCalled();
-  //   expect(next).toHaveBeenCalledWith(
-  //     new AppResponse(commonResponseMessages.EMAIL_EXIST)
-  //   );
-  // });
+    expect(readFile).toHaveBeenCalled();
+    expect(writeFile).not.toHaveBeenCalled();
+    expect(next).toHaveBeenCalledWith(
+      new AppResponse(commonResponseMessages.EMAIL_EXIST)
+    );
+  });
 });
 
-describe('sign-in flow', () => {
+describe('User Sign-in', () => {
   it('should handle a valid sign-in request', async () => {
     const user = { email: 'test@example.com', password: 'hashedPassword' }; // stored user data in the file
     const req = { body: { email: 'test@example.com', password: 'password' } };
@@ -171,7 +173,7 @@ describe('sign-in flow', () => {
   });
 });
 
-describe('sign-out flow', () => {
+describe('User Signout', () => {
   it('should verify if cache is deleted upon successfull sign-out', () => {
     const req = { userId: 'user123' };
     const next = jest.fn();
@@ -181,6 +183,185 @@ describe('sign-out flow', () => {
     expect(cacheManager.delete).toHaveBeenCalledWith(`${req.userId}-loggedIn`);
     expect(next).toHaveBeenCalledWith(
       new AppResponse(commonResponseMessages.LOGGED_OUT)
+    );
+  });
+});
+
+describe('Get User Preferences', () => {
+  it('should fetch the user preferences available', async () => {
+    const req = { userId: 'user123' };
+    const user = {
+      email: 'test@example.com',
+      id: 'user123',
+      password: 'hashedPassword',
+      preferences: {
+        categories: ['technology'],
+        sources: ['abc-news', 'bbc-news'],
+      },
+    };
+    const next = jest.fn();
+
+    readFile.mockResolvedValue({ users: [user] });
+
+    await getUserPreferences(req, null, next);
+
+    expect(next).toHaveBeenCalledWith(
+      new AppResponse(
+        commonResponseMessages.FETCHED_SUCCESSFULLY,
+        user.preferences
+      )
+    );
+  });
+});
+
+describe('Update User Preferences', () => {
+  it('should update the user preferences', async () => {
+    const req = {
+      userId: 'user123',
+      body: {
+        categories: ['technology'],
+        sources: ['abc-news', 'bbc-news'],
+      },
+    };
+
+    const user = { email: 'test@gmail.com', id: 'user123' };
+    const next = jest.fn();
+
+    readFile.mockResolvedValue({
+      users: [user],
+    });
+
+    writeFile.mockResolvedValue({
+      users: [
+        {
+          email: 'test@gmail.com',
+          id: 'user123',
+          preferences: {
+            categories: ['technology'],
+            sources: ['abc-news', 'bbc-news'],
+          },
+        },
+      ],
+    });
+    await updateUserPreferences(req, null, next);
+
+    expect(next).toHaveBeenCalledWith(
+      new AppResponse(commonResponseMessages.UPDATED_SUCCESSFULLY)
+    );
+  });
+
+  it('should throw an error if user is not found', async () => {
+    const req = {
+      userId: '',
+      body: {
+        categories: ['technology'],
+        sources: ['abc-news', 'bbc-news'],
+      },
+    };
+
+    const user = { email: 'test@gmail.com', id: 'user123' };
+    const next = jest.fn();
+
+    readFile.mockResolvedValue({
+      users: [user],
+    });
+
+    await updateUserPreferences(req, null, next);
+
+    expect(next).toHaveBeenCalledWith(
+      new AppResponse(commonResponseMessages.NOT_FOUND)
+    );
+  });
+});
+
+describe('User Confirmation flow', () => {
+  beforeEach(() => {
+    req = {
+      params: 'token123',
+    };
+  });
+  afterEach(() => {
+    req = null;
+  });
+  it('should throw an error if token is expired', async () => {
+    readFile.mockResolvedValue({
+      users: [{ email: 'test@gmail.com' }],
+    });
+
+    verifyConfirmationToken.mockReturnValue('jwt expired');
+
+    await confirmUser(req, null, next);
+
+    expect(next).toHaveBeenCalledWith(
+      new AppResponse(commonResponseMessages.EXPIRED_TOKEN)
+    );
+  });
+
+  it('should throw a user not found error, if token payload doesnot have any valid users', async () => {
+    readFile.mockResolvedValue({
+      users: [{ email: 'test@gmail.com' }],
+    });
+
+    verifyConfirmationToken.mockReturnValue({ email: 'test1@gmail.com' }); //wrong user info to throw error
+
+    await confirmUser(req, null, next);
+
+    expect(next).toHaveBeenCalledWith(
+      new AppResponse(commonResponseMessages.NOT_FOUND)
+    );
+  });
+
+  it('should send a welcome mail to user and remove activationToken and isActive set to true from in-memory storage', async () => {
+    const resultMatcher = {
+      users: [
+        {
+          fullname: 'test',
+          email: 'test@gmail.com',
+          isActive: true,
+        },
+        {
+          fullname: 'test1',
+          email: 'test1@gmail.com',
+          activationToken: 'LiveLong&Prosper',
+          isActive: false,
+        },
+      ],
+    };
+
+    const userData = {
+      users: [
+        {
+          fullname: 'test',
+          email: 'test@gmail.com',
+          activationToken: 'MayThe4thBWithU',
+          isActive: false,
+        },
+        {
+          fullname: 'test1',
+          email: 'test1@gmail.com',
+          activationToken: 'LiveLong&Prosper',
+          isActive: false,
+        },
+      ],
+    };
+
+    readFile.mockResolvedValue(userData);
+
+    await writeFile.mockResolvedValue();
+    verifyConfirmationToken.mockReturnValue({ email: 'test@gmail.com' });
+
+    const emailInstance = new Email(
+      { fullname: 'test', email: 'test@gmail.com' },
+      'https://localhost:3000'
+    );
+    emailInstance.sendWelcome();
+
+    await confirmUser(req, null, next);
+
+    expect(writeFile).toHaveBeenCalled();
+    expect(resultMatcher).toEqual(userData);
+    expect(next).toHaveBeenCalledWith(
+      new AppResponse(commonResponseMessages.CONFIRMED_USER)
     );
   });
 });

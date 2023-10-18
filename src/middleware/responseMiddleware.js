@@ -2,7 +2,7 @@ const AppResponse = require('../helpers/AppResponse');
 const { commonResponseMessages } = require('../data/constants');
 
 const sendResponse = (result, res) => {
-  if (result.isOperational) {
+  if (result?.isOperational) {
     //Trusted resultors that we know
     res.status(result.statusCode).json({
       status: result.status,
@@ -28,11 +28,11 @@ const responseMiddleware = (result, req, res, next) => {
   if (result instanceof AppResponse) {
     sendResponse(result, res);
     return;
-  } else if (result.message === 'jwt expired') {
+  } else if (result?.message === 'jwt expired') {
     result = handleJWTExpiredError();
   } else if (
-    result.message === 'invalid token' ||
-    result.message === 'invalid signature'
+    result?.message === 'invalid token' ||
+    result?.message === 'invalid signature'
   ) {
     result = handleJWTError();
   }
