@@ -141,10 +141,11 @@ const markArticleAsRead = catchError(async (req, res, next) => {
       favorite: [],
     };
   }
-  // If the news ID is not already in the read array, add it
-  if (!currentUser.articles.read.includes(newsId)) {
-    currentUser.articles.read.push(newsId);
+  // If the news ID is already in the read array, throw back a response
+  if (currentUser.articles.read.includes(newsId)) {
+    return next(new AppResponse(commonResponseMessages.ARTICLE_EXIST));
   }
+  currentUser.articles.read.push(newsId);
 
   userData.users[userIndex] = currentUser;
 
@@ -165,9 +166,9 @@ const makeArticleAsFavorite = catchError(async (req, res, next) => {
       favorite: [],
     };
   }
-  // If the news ID is not already in the read array, add it
-  if (!currentUser.articles.favorite.includes(newsId)) {
-    currentUser.articles.favorite.push(newsId);
+  // If the news ID is not already in the favorite array, throw back response
+  if (currentUser.articles.favorite.includes(newsId)) {
+    return next(new AppResponse(commonResponseMessages.ARTICLE_EXIST));
   }
 
   userData.users[userIndex] = currentUser;

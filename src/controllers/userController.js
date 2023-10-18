@@ -67,7 +67,7 @@ const confirmUser = catchError(async (req, res, next) => {
   const result = await verifyConfirmationToken(token);
 
   if (result === 'jwt expired') {
-    throw new AppResponse(commonResponseMessages.EXPIRED_TOKEN);
+    return next(new AppResponse(commonResponseMessages.EXPIRED_TOKEN));
   }
 
   const userIndex = userData.users.findIndex(
@@ -75,7 +75,7 @@ const confirmUser = catchError(async (req, res, next) => {
   );
 
   if (userIndex === -1) {
-    throw new AppResponse(commonResponseMessages.NOT_FOUND);
+    return next(new AppResponse(commonResponseMessages.NOT_FOUND));
   }
 
   delete userData.users[userIndex].activationToken;

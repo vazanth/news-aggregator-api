@@ -9,6 +9,7 @@ const {
   EMAIL_PASSWORD,
 } = require('../config');
 const { readFile } = require('../helpers/fileOperations');
+const AppResponse = require('../helpers/AppResponse');
 
 class Email {
   constructor(user, url) {
@@ -51,7 +52,7 @@ class Email {
     try {
       await this.prepareTransport().sendMail(mailOptions);
     } catch (error) {
-      console.error('err', error);
+      new AppResponse(error.message, null, 500);
     }
   }
 
