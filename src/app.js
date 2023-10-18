@@ -1,4 +1,5 @@
 const express = require('express');
+const helmet = require('helmet');
 const userRouter = require('./routes/userRoutes');
 const newsRouter = require('./routes/newsRoutes');
 const scheduleRouter = require('./routes/scheduleRoutes');
@@ -9,6 +10,9 @@ const rateLimiter = require('./helpers/rateLimiter');
 const logger = require('./services/loggerService');
 
 const app = express();
+
+//set security http headers
+app.use(helmet());
 
 // middleware for parsing request
 app.use(express.json());
