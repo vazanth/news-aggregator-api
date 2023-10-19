@@ -1,6 +1,0 @@
-{
-  "*.{js,ts}": [
-    "npm run lint",
-    "npm test -- --findRelatedTests"
-  ]
-}
