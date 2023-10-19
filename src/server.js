@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const app = require('./app');
 const { SERVER_PORT } = require('./config');
 
@@ -7,7 +8,7 @@ const server = app.listen(PORT, () => {
 });
 
 process.on('unhandledRejection', (err) => {
-  console.error('SHUTTING DOWN THE SERVER🎇🎇');
+  console.error('SHUTTING DOWN THE SERVER🎇🎇', err);
   server.close(() => {
     process.exit(1);
   });

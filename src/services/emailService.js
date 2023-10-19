@@ -1,13 +1,7 @@
 const nodemailer = require('nodemailer');
-const interpolateTemplate = require('../helpers/interpolateTemplate');
 const path = require('path');
-const {
-  EMAIL_FROM,
-  SMTP_HOST,
-  SMTP_PORT,
-  EMAIL_USER_NAME,
-  EMAIL_PASSWORD,
-} = require('../config');
+const interpolateTemplate = require('../helpers/interpolateTemplate');
+const { EMAIL_FROM, SMTP_HOST, SMTP_PORT, EMAIL_USER_NAME, EMAIL_PASSWORD } = require('../config');
 const { readFile } = require('../helpers/fileOperations');
 const AppResponse = require('../helpers/AppResponse');
 
@@ -31,13 +25,7 @@ class Email {
   }
 
   async send(template, subject) {
-    const filePath = path.join(
-      __dirname,
-      '..',
-      'helpers',
-      'templates',
-      `${template}.html`
-    );
+    const filePath = path.join(__dirname, '..', 'helpers', 'templates', `${template}.html`);
     const fileContent = await readFile(filePath, true);
     const html = interpolateTemplate(fileContent, {
       userName: this.firstName,
@@ -46,13 +34,13 @@ class Email {
     const mailOptions = {
       from: this.from,
       to: this.to,
-      subject: subject,
+      subject,
       html,
     };
     try {
       await this.prepareTransport().sendMail(mailOptions);
     } catch (error) {
-      new AppResponse(error.message, null, 500);
+      throw new AppResponse(error.message, null, 500);
     }
   }
 
@@ -61,10 +49,7 @@ class Email {
   }
 
   async sendConfirmation() {
-    await this.send(
-      'confirmAccount',
-      'Account confirmation - valid for 5 mins'
-    );
+    await this.send('confirmAccount', 'Account confirmation - valid for 5 mins');
   }
 }
 

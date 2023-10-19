@@ -16,14 +16,12 @@ const signToken = (user, res, next) => {
   const token = jwt.sign(user, JWT_SECRET_KEY, {
     expiresIn: JWT_EXPIRES_IN,
   });
-  const { password, ...rest } = user;
-  const successResponse = new AppResponse(
-    commonResponseMessages.CREATED_SUCCESSFULLY,
-    {
-      ...rest,
-      token,
-    }
-  );
+  // eslint-disable-next-line no-unused-vars
+  const { password: _password, ...rest } = user;
+  const successResponse = new AppResponse(commonResponseMessages.CREATED_SUCCESSFULLY, {
+    ...rest,
+    token,
+  });
 
   // caching the logged-in user for schedulers
   cacheManager.set(`${user.id}-loggedIn`, user.preferences);
@@ -40,10 +38,7 @@ const createverificationToken = (user) => {
 
 const verifyConfirmationToken = async (token) => {
   try {
-    const decodeToken = await promisify(jwt.verify)(
-      token,
-      VERIFICATION_SECRET_KEY
-    );
+    const decodeToken = await promisify(jwt.verify)(token, VERIFICATION_SECRET_KEY);
     return decodeToken;
   } catch (error) {
     return error.message;
@@ -51,19 +46,16 @@ const verifyConfirmationToken = async (token) => {
 };
 
 const verifyToken = catchError(async (req, res, next) => {
-  let token = '';
   if (!req?.headers?.authorization?.startsWith('Bearer')) {
     return next(new AppResponse(commonResponseMessages.NOT_LOGGED_IN));
   }
-  token = req.headers.authorization.split(' ')[1];
+  const [, token] = req.headers.authorization.split(' ');
 
-  //verify token signature
+  // verify token signature
   const decodeToken = await promisify(jwt.verify)(token, JWT_SECRET_KEY);
 
   const userData = await readFile();
-  const currentUser = userData.users.find(
-    (user) => user.id === decodeToken?.id
-  );
+  const currentUser = userData.users.find((user) => user.id === decodeToken?.id);
 
   if (!currentUser) {
     return next(new AppResponse(commonResponseMessages.NOT_FOUND));

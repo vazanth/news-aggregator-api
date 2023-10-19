@@ -16,13 +16,7 @@ async function ensureLogDirectoryExists() {
 }
 
 // Call the function to ensure the log directory exists
-ensureLogDirectoryExists()
-  .then(() => {
-    console.log('Log directory is ready.');
-  })
-  .catch((error) => {
-    console.error('Error creating log directory:', error);
-  });
+ensureLogDirectoryExists();
 
 const levels = {
   http: 10,
@@ -54,7 +48,7 @@ const logger = pino(
   pino.destination({
     dest: logDirectory,
     sync: false,
-  })
+  }),
 );
 
 const prettyStream = pinoPretty();
