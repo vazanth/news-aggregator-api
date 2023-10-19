@@ -1,15 +1,7 @@
+// Mock Setup's
 jest.mock('jsonwebtoken', () => ({
   sign: jest.fn(() => 'generatedToken'),
   verify: jest.fn(),
-}));
-
-jest.mock('../../src/helpers/cacheManager', () => ({
-  get: jest.fn(),
-  set: jest.fn(),
-}));
-
-jest.mock('../../src/helpers/fileOperations', () => ({
-  readFile: jest.fn(),
 }));
 
 beforeEach(() => {
@@ -69,6 +61,7 @@ describe('Authentication Helper function', () => {
   it('should generate token, cache user preferences, and send response', () => {
     const { password, ...rest } = user;
 
+    // setting up some dummy user data in my mocked cache manager
     cacheManager.set.mockReturnValue(`userId123-AllNews`, rest);
 
     signToken(user, null, next);
@@ -88,10 +81,12 @@ describe('Authentication Helper function', () => {
   });
 
   it('should verify the Token and attach the user data to request object', async () => {
+    // mocking readFile operation and returning some dummy user data
     await readFile.mockResolvedValue({ users: [user] });
 
     await verifyToken(req, null, next);
 
+    // Assertion
     expect(jwt.verify).toHaveBeenCalledWith(
       token,
       expect.any(String),
@@ -104,18 +99,19 @@ describe('Authentication Helper function', () => {
   });
 
   it('should verify if there is no token in headers', async () => {
+    // purposefully removing token to verify the flow
     req.headers.authorization = null;
 
     await verifyToken(req, null, next);
 
+    // Assertion
     expect(next).toHaveBeenCalledWith(
       new AppResponse(commonResponseMessages.NOT_LOGGED_IN)
     );
   });
 
   it('should throw error if decoden token is incorrect and have no stored user data', async () => {
-    await readFile.mockResolvedValue({ users: [user] });
-
+    // setting user data to null, to check the flow unidentified user
     user = null;
 
     await verifyToken(req, null, next);
@@ -132,6 +128,7 @@ describe('Authentication Helper function', () => {
   });
 
   it('should verify restrictTo is applicable only for admin users and proceed ahead', () => {
+    // RBAC setup don to verify protected endpoints
     restrictTo('admin')(req, null, next);
 
     expect(next).toHaveBeenCalled();

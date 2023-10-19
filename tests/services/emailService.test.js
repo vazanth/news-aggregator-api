@@ -3,10 +3,6 @@ const nodemailer = require('nodemailer');
 
 jest.mock('nodemailer');
 
-jest.mock('../../src/helpers/fileOperations', () => ({
-  readFile: jest.fn(),
-}));
-
 jest.mock('../../src/helpers/interpolateTemplate');
 
 const Email = require('../../src/services/emailService');

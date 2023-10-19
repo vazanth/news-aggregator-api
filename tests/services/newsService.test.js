@@ -1,3 +1,7 @@
+// unmocking the common mock has this is the core test file so calling the fn directly
+jest.unmock('../../src/services/newsService');
+jest.resetModules();
+
 jest.mock('axios');
 
 const axios = require('axios');

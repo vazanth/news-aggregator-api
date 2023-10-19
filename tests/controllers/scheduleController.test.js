@@ -46,10 +46,10 @@ describe('Scheduling cron jobs for fetching external API', () => {
   });
 
   it('should start a new schedule if no job is running for hourly', () => {
+    // mocking startSchedule to return true
     schedulerInstance.startSchedule = jest.fn().mockReturnValue(true);
     startSchedule(req, null, next);
 
-    // expect(schedule.scheduleJob).toHaveBeenCalled();
     expect(next).toHaveBeenCalledWith(
       new AppResponse(commonResponseMessages.SCHEDULE_STARTED)
     );
@@ -65,6 +65,7 @@ describe('Scheduling cron jobs for fetching external API', () => {
   });
 
   it('should throw a error, if schedule is already running', () => {
+    // mocking startSchedule to return false
     schedulerInstance.startSchedule = jest.fn().mockReturnValue(false);
     startSchedule(req, null, next);
 
@@ -87,6 +88,7 @@ describe('Stopping cron jobs upon request', () => {
   });
 
   it('should stop the currently running cron job', () => {
+    // mocking stop Schedule to return true
     schedulerInstance.stopSchedule = jest.fn().mockReturnValue(true);
 
     stopSchedule(null, null, next);
@@ -97,6 +99,7 @@ describe('Stopping cron jobs upon request', () => {
   });
 
   it('should throw error, if the job is already in stop state', () => {
+    // mocking stop Schedule to return false
     schedulerInstance.stopSchedule = jest.fn().mockReturnValue(false);
 
     stopSchedule(null, null, next);
