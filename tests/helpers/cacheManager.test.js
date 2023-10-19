@@ -1,3 +1,7 @@
+// unmocking the common mock has this is the core test file so calling the fn directly
+jest.unmock('../../src/helpers/cacheManager');
+jest.resetModules();
+
 const cacheManagerInstance = require('../../src/helpers/cacheManager');
 
 describe("Verify cacheManager's different methods", () => {

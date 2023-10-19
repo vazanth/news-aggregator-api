@@ -1,14 +1,3 @@
-jest.mock('../../src/helpers/cacheManager', () => ({
-  mget: jest.fn(),
-  keys: jest.fn(),
-  set: jest.fn(),
-}));
-
-jest.mock('../../src/services/newsService', () => ({
-  fetchAllNews: jest.fn(),
-  fetchTopHeadlines: jest.fn(),
-}));
-
 const cacheManager = require('../../src/helpers/cacheManager');
 const updateNewsCache = require('../../src/services/newsCacheService');
 const {

@@ -1,18 +1,3 @@
-jest.mock('../../src/helpers/cacheManager', () => ({
-  get: jest.fn(),
-  set: jest.fn(),
-}));
-
-jest.mock('../../src/services/newsService', () => ({
-  fetchAllNews: jest.fn(),
-  fetchTopHeadlines: jest.fn(),
-}));
-
-jest.mock('../../src/helpers/fileOperations', () => ({
-  readFile: jest.fn(),
-  writeFile: jest.fn(),
-}));
-
 beforeEach(() => {
   jest.clearAllMocks();
 });
@@ -33,6 +18,10 @@ const { commonResponseMessages } = require('../../src/data/constants');
 const AppResponse = require('../../src/helpers/AppResponse');
 const cacheManager = require('../../src/helpers/cacheManager');
 const { readFile, writeFile } = require('../../src/helpers/fileOperations');
+const {
+  fetchAllNews,
+  fetchTopHeadlines,
+} = require('../../src/services/newsService');
 const dummyNewsData = require('./newsData.test.json');
 
 let req = '';
@@ -79,6 +68,7 @@ afterEach(() => {
 
 describe('Fetching All news from external API', () => {
   it('should return cached news data if available in cache', async () => {
+    // setting a dummy data to my mocked cache manager
     cacheManager.get.mockReturnValue(newsData);
 
     await getNews(req, null, next);
@@ -95,9 +85,7 @@ describe('Fetching All news from external API', () => {
     cacheManager.get.mockReturnValue(null); // mocking it has nothing in cache
     cacheManager.set.mockReturnValue(`${req.user.id}-AllNews`, newsData);
 
-    require('../../src/services/newsService').fetchAllNews.mockResolvedValue(
-      newsData
-    );
+    fetchAllNews.mockResolvedValue(newsData);
 
     await getNews(req, null, next);
 
@@ -141,9 +129,7 @@ describe('Fetching Top news from external API', () => {
     cacheManager.get.mockReturnValue(null); // mocking it has nothing in cache
     cacheManager.set.mockReturnValue(`${req.user.id}-TopNews`, newsData);
 
-    require('../../src/services/newsService').fetchTopHeadlines.mockResolvedValue(
-      newsData
-    );
+    fetchTopHeadlines.mockResolvedValue(newsData);
 
     await getTopHeadlines(req, null, next);
 
@@ -160,6 +146,7 @@ describe('Fetching Top news from external API', () => {
 
 describe('Fetching the user read news from in-memory data', () => {
   it('should throw no data found message if user has not read any article ', async () => {
+    // setting the read to empty, to check for a no data found response
     userInfo.articles.read = [];
     await readFile.mockResolvedValue({ users: [userInfo] });
 
@@ -187,9 +174,7 @@ describe('Fetching the user read news from in-memory data', () => {
     cacheManager.get.mockReturnValue(null); // mocking it has nothing in cache
     cacheManager.set.mockReturnValue(`${req.user.id}-AllNews`, newsData);
 
-    require('../../src/services/newsService').fetchAllNews.mockResolvedValue(
-      JSON.parse(newsData)
-    );
+    fetchAllNews.mockResolvedValue(JSON.parse(newsData));
 
     await getReadNews(req, null, next);
 
@@ -208,6 +193,7 @@ describe('Fetching the user read news from in-memory data', () => {
 
 describe('Fetching the user favorite news from in-memory data', () => {
   it('should throw no data found message if user has not marker any article has favorite', async () => {
+    // setting the favorite to empty, to check for a no data found response
     userInfo.articles.favorite = [];
     await readFile.mockResolvedValue({ users: [userInfo] });
 
@@ -235,9 +221,7 @@ describe('Fetching the user favorite news from in-memory data', () => {
     cacheManager.get.mockReturnValue(null); // mocking it has nothing in cache
     cacheManager.set.mockReturnValue(`${req.user.id}-AllNews`, newsData);
 
-    require('../../src/services/newsService').fetchAllNews.mockResolvedValue(
-      JSON.parse(newsData)
-    );
+    fetchAllNews.mockResolvedValue(JSON.parse(newsData));
 
     await getFavoriteNews(req, null, next);
 

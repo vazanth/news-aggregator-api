@@ -1,8 +1,3 @@
-jest.mock('../../src/helpers/fileOperations', () => ({
-  readFile: jest.fn(),
-  writeFile: jest.fn(),
-}));
-
 jest.mock('argon2', () => ({
   hash: jest.fn(),
   verify: jest.fn(),
@@ -12,10 +7,6 @@ jest.mock('../../src/controllers/authController', () => ({
   signToken: jest.fn(),
   createverificationToken: jest.fn(),
   verifyConfirmationToken: jest.fn(),
-}));
-
-jest.mock('../../src/helpers/cacheManager', () => ({
-  delete: jest.fn(),
 }));
 
 jest.mock('../../src/services/emailService', () => {
