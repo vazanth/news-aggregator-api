@@ -1,5 +1,6 @@
 const { fetchAllNews, fetchTopHeadlines } = require('./newsService');
 const cacheManager = require('../helpers/cacheManager');
+const logger = require('./loggerService');
 
 const updateNewsCache = async () => {
   const pattern = /-loggedIn$/;
@@ -10,20 +11,22 @@ const updateNewsCache = async () => {
   const matchedData = cacheManager.mget(matchedKeys);
 
   if (matchedData) {
-    const keys = Object.keys(matchedData);
-    for (const item of keys) {
-      const preferences = matchedData[item];
-      const allNews = await fetchAllNews(preferences.sources.join(', '));
-      const topNews = await fetchTopHeadlines(
-        preferences.categories.join(', ')
-      );
-      const actualId = item.replace('-loggedIn', '');
-      cacheManager.set(`${actualId}-AllNews`, JSON.stringify(allNews));
-      cacheManager.set(`${actualId}-TopNews`, JSON.stringify(topNews));
-      console.log('News cache updated.');
-    }
+    await Promise.all(
+      Object.entries(matchedData).map(async ([item, preferences]) => {
+        const actualId = item.replace('-loggedIn', '');
+        const [allNews, topNews] = await Promise.all([
+          fetchAllNews(preferences.sources.join(', ')),
+          fetchTopHeadlines(preferences.categories.join(', ')),
+        ]);
+        cacheManager.set(`${actualId}-AllNews`, JSON.stringify(allNews));
+        cacheManager.set(`${actualId}-TopNews`, JSON.stringify(topNews));
+      }),
+    );
+    // eslint-disable-next-line no-console
+    logger.info('News cache updated.');
   } else {
-    console.log('No active users to update cache.');
+    // eslint-disable-next-line no-console
+    logger.info('No active users to update cache.');
   }
 };
 

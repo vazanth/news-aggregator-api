@@ -4,20 +4,20 @@ const cacheManager = require('./cacheManager');
 
 const filepath = path.join(__dirname, '..', 'data', 'users.json');
 
-const readFile = async (path = filepath, isHtmlFile = false) => {
-  const cachedData = cacheManager.get(path);
+const readFile = async (pathData = filepath, isHtmlFile = false) => {
+  const cachedData = cacheManager.get(pathData);
   if (cachedData) {
     return typeof cachedData === 'string' ? JSON.parse(cachedData) : cachedData;
   }
 
-  const result = await fsPromises.readFile(path, {
+  const result = await fsPromises.readFile(pathData, {
     encoding: 'utf-8',
     flag: 'r',
   });
 
   const data = isHtmlFile ? result : JSON.parse(result);
 
-  cacheManager.set(path, data);
+  cacheManager.set(pathData, data);
 
   return data;
 };

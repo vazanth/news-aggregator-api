@@ -1,10 +1,11 @@
 function interpolateTemplate(template, data) {
+  let result = template;
   const keys = Object.keys(data);
   keys.forEach((key) => {
     const regex = new RegExp(`{{${key}}}`, 'g');
-    template = template.replace(regex, data[key]);
+    result = result.replace(regex, data[key]);
   });
-  return template;
+  return result;
 }
 
 module.exports = interpolateTemplate;

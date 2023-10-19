@@ -1,6 +1,7 @@
 const axios = require('axios');
 const { NEWS_API_KEY } = require('../config');
 const AppResponse = require('../helpers/AppResponse');
+
 const fetchAllNews = async (params) => {
   const options = {
     method: 'GET',

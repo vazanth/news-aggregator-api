@@ -14,11 +14,7 @@ afterEach(() => {
 
 const jwt = require('jsonwebtoken');
 const cacheManager = require('../../src/helpers/cacheManager');
-const {
-  signToken,
-  verifyToken,
-  restrictTo,
-} = require('../../src/controllers/authController');
+const { signToken, verifyToken, restrictTo } = require('../../src/controllers/authController');
 const AppResponse = require('../../src/helpers/AppResponse');
 const { commonResponseMessages } = require('../../src/data/constants');
 const { readFile } = require('../../src/helpers/fileOperations');
@@ -46,7 +42,7 @@ describe('Authentication Helper function', () => {
       },
     };
     token = '1234afdssddsh3578';
-    jwt.verify.mockImplementationOnce((token, secret, callback) => {
+    jwt.verify.mockImplementationOnce((_, secret, callback) => {
       callback(null, user);
     });
   });
@@ -59,6 +55,7 @@ describe('Authentication Helper function', () => {
   });
 
   it('should generate token, cache user preferences, and send response', () => {
+    // eslint-disable-next-line no-unused-vars
     const { password, ...rest } = user;
 
     // setting up some dummy user data in my mocked cache manager
@@ -76,7 +73,7 @@ describe('Authentication Helper function', () => {
       new AppResponse(commonResponseMessages.CREATED_SUCCESSFULLY, {
         ...rest,
         token: 'generatedToken',
-      })
+      }),
     );
   });
 
@@ -87,11 +84,7 @@ describe('Authentication Helper function', () => {
     await verifyToken(req, null, next);
 
     // Assertion
-    expect(jwt.verify).toHaveBeenCalledWith(
-      token,
-      expect.any(String),
-      expect.any(Function)
-    );
+    expect(jwt.verify).toHaveBeenCalledWith(token, expect.any(String), expect.any(Function));
 
     expect(req.user).toEqual(user);
 
@@ -105,9 +98,7 @@ describe('Authentication Helper function', () => {
     await verifyToken(req, null, next);
 
     // Assertion
-    expect(next).toHaveBeenCalledWith(
-      new AppResponse(commonResponseMessages.NOT_LOGGED_IN)
-    );
+    expect(next).toHaveBeenCalledWith(new AppResponse(commonResponseMessages.NOT_LOGGED_IN));
   });
 
   it('should throw error if decoden token is incorrect and have no stored user data', async () => {
@@ -116,15 +107,9 @@ describe('Authentication Helper function', () => {
 
     await verifyToken(req, null, next);
 
-    expect(jwt.verify).toHaveBeenCalledWith(
-      token,
-      expect.any(String),
-      expect.any(Function)
-    );
+    expect(jwt.verify).toHaveBeenCalledWith(token, expect.any(String), expect.any(Function));
 
-    expect(next).toHaveBeenCalledWith(
-      new AppResponse(commonResponseMessages.NOT_FOUND)
-    );
+    expect(next).toHaveBeenCalledWith(new AppResponse(commonResponseMessages.NOT_FOUND));
   });
 
   it('should verify restrictTo is applicable only for admin users and proceed ahead', () => {
@@ -138,8 +123,6 @@ describe('Authentication Helper function', () => {
     req.user.role = '';
     restrictTo('admin')(req, null, next);
 
-    expect(next).toHaveBeenCalledWith(
-      new AppResponse(commonResponseMessages.NOT_AUTHORIZED)
-    );
+    expect(next).toHaveBeenCalledWith(new AppResponse(commonResponseMessages.NOT_AUTHORIZED));
   });
 });

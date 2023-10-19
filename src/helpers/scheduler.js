@@ -13,7 +13,7 @@ class Scheduler {
     }
 
     const cronSchedule = convertToCron(scheduleType, scheduleValue);
-    this.scheduledJob = schedule.scheduleJob(cronSchedule, function () {
+    this.scheduledJob = schedule.scheduleJob(cronSchedule, () => {
       updateNewsCache();
     });
 

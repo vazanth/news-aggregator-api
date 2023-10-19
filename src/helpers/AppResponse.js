@@ -10,22 +10,21 @@ class AppResponse {
   }
 
   getStatusCode(message) {
-    for (var key in commonResponseMessages) {
-      if (commonResponseMessages[key] === message) {
-        return statusMappings[key];
-      }
-    }
-    return 500; // no match found then 500
+    const matchingKey = Object.keys(commonResponseMessages).find(
+      (key) => commonResponseMessages[key] === message,
+    );
+
+    return matchingKey ? statusMappings[matchingKey] : 500;
   }
 
   getStatus(statusCode) {
     if (String(statusCode).startsWith('4')) {
       return 'failed';
-    } else if (String(statusCode).startsWith('5')) {
-      return 'error';
-    } else {
-      return 'success';
     }
+    if (String(statusCode).startsWith('5')) {
+      return 'error';
+    }
+    return 'success';
   }
 }
 

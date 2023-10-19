@@ -11,7 +11,7 @@ const logger = require('./services/loggerService');
 
 const app = express();
 
-//set security http headers
+// set security http headers
 app.use(helmet());
 
 // middleware for parsing request
@@ -25,7 +25,7 @@ app.use((req, res, next) => {
   res.on('finish', () => {
     const elapsedTime = Date.now() - start;
     logger.info(
-      `Method: ${req.method} url: ${req.url} status: ${res.statusCode} responseTime: ${elapsedTime}ms userAgent: ${req.headers['user-agent']}`
+      `Method: ${req.method} url: ${req.url} status: ${res.statusCode} responseTime: ${elapsedTime}ms userAgent: ${req.headers['user-agent']}`,
     );
   });
   next();

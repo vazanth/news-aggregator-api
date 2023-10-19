@@ -1,5 +1,5 @@
-const interpolateTemplate = require('../../src/helpers/interpolateTemplate');
 const nodemailer = require('nodemailer');
+const interpolateTemplate = require('../../src/helpers/interpolateTemplate');
 
 jest.mock('nodemailer');
 
@@ -7,6 +7,7 @@ jest.mock('../../src/helpers/interpolateTemplate');
 
 const Email = require('../../src/services/emailService');
 const { readFile } = require('../../src/helpers/fileOperations');
+const AppResponse = require('../../src/helpers/AppResponse');
 
 afterEach(() => {
   jest.clearAllMocks();
@@ -17,16 +18,13 @@ describe('Email', () => {
     it('should send a welcome email', async () => {
       const email = new Email(
         { email: 'test@example.com', fullname: 'Test User' },
-        'http://example.com'
+        'http://example.com',
       );
       email.send = jest.fn();
 
       await email.sendWelcome();
 
-      expect(email.send).toHaveBeenCalledWith(
-        'welcome',
-        'Welcome to News Aggregator'
-      );
+      expect(email.send).toHaveBeenCalledWith('welcome', 'Welcome to News Aggregator');
     });
   });
 
@@ -34,7 +32,7 @@ describe('Email', () => {
     it('should send a confirmation email', async () => {
       const email = new Email(
         { email: 'test@example.com', fullname: 'Test User' },
-        'http://example.com'
+        'http://example.com',
       );
       email.send = jest.fn();
 
@@ -42,7 +40,7 @@ describe('Email', () => {
 
       expect(email.send).toHaveBeenCalledWith(
         'confirmAccount',
-        'Account confirmation - valid for 5 mins'
+        'Account confirmation - valid for 5 mins',
       );
     });
   });
@@ -59,7 +57,7 @@ describe('Verifying the send function', () => {
 
     const email = new Email(
       { email: 'test@example.com', fullname: 'Test User' },
-      'http://example.com'
+      'http://example.com',
     );
 
     nodemailer.createTransport.mockReturnValue({
@@ -88,7 +86,7 @@ describe('Verifying the send function', () => {
 
     const email = new Email(
       { email: 'test@example.com', fullname: 'Test User' },
-      'http://example.com'
+      'http://example.com',
     );
 
     nodemailer.createTransport.mockImplementation(() => {
@@ -98,7 +96,7 @@ describe('Verifying the send function', () => {
     try {
       await email.send(template, subject);
     } catch (error) {
-      expect(error).toEqual(new AppResponse('Failed to send email', null, 500));
+      expect(error).toEqual(new AppResponse('Failed to create transporter', null, 500));
     }
     expect(nodemailer.createTransport).toHaveBeenCalledTimes(1);
   });

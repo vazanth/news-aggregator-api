@@ -1,10 +1,6 @@
 const argon2 = require('argon2');
 const { v4: uuidv4 } = require('uuid');
-const {
-  signToken,
-  createverificationToken,
-  verifyConfirmationToken,
-} = require('./authController');
+const { signToken, createverificationToken, verifyConfirmationToken } = require('./authController');
 const catchError = require('../helpers/catchError');
 const AppResponse = require('../helpers/AppResponse');
 const { writeFile, readFile } = require('../helpers/fileOperations');
@@ -33,9 +29,7 @@ const signUp = catchError(async (req, res, next) => {
   };
   userData.users.push(payload);
   await writeFile(JSON.stringify(userData));
-  const url = `${req.protocol}://${req.get(
-    'host'
-  )}/api/users/confirm-user/${activationToken}`;
+  const url = `${req.protocol}://${req.get('host')}/api/users/confirm-user/${activationToken}`;
   await new Email({ fullname, email }, url).sendConfirmation();
   return next(new AppResponse(commonResponseMessages.REGISTERED_SUCCESSFULLY));
 });
@@ -43,7 +37,7 @@ const signUp = catchError(async (req, res, next) => {
 const signIn = catchError(async (req, res, next) => {
   const { email, password } = req.body;
   const userData = await readFile();
-  const user = userData.users.find((user) => user.email === email);
+  const user = userData.users.find((userDetail) => userDetail.email === email);
   if (!user) {
     throw new AppResponse(commonResponseMessages.AUTH_INCORRECT);
   }
@@ -55,7 +49,7 @@ const signIn = catchError(async (req, res, next) => {
 });
 
 const signOut = (req, res, next) => {
-  let userId = req.userId;
+  const { userId } = req;
   cacheManager.delete(`${userId}-loggedIn`);
   return next(new AppResponse(commonResponseMessages.LOGGED_OUT));
 };
@@ -70,9 +64,7 @@ const confirmUser = catchError(async (req, res, next) => {
     return next(new AppResponse(commonResponseMessages.EXPIRED_TOKEN));
   }
 
-  const userIndex = userData.users.findIndex(
-    (user) => user.email === result.email
-  );
+  const userIndex = userData.users.findIndex((user) => user.email === result.email);
 
   if (userIndex === -1) {
     return next(new AppResponse(commonResponseMessages.NOT_FOUND));
@@ -82,8 +74,8 @@ const confirmUser = catchError(async (req, res, next) => {
 
   userData.users[userIndex].isActive = true;
 
-  const fullname = userData.users[userIndex].fullname;
-  const email = userData.users[userIndex].email;
+  const { fullname } = userData.users[userIndex];
+  const { email } = userData.users[userIndex];
 
   await writeFile(JSON.stringify(userData));
   await new Email({ fullname, email }, '').sendWelcome();
@@ -91,22 +83,15 @@ const confirmUser = catchError(async (req, res, next) => {
 });
 
 const getUserPreferences = catchError(async (req, res, next) => {
-  let userId = req.userId;
+  const { userId } = req;
   const result = await readFile();
-  const currentUserPrefences = result.users.find(
-    (user) => user.id === userId
-  )?.preferences;
+  const currentUserPrefences = result.users.find((user) => user.id === userId)?.preferences;
 
-  next(
-    new AppResponse(
-      commonResponseMessages.FETCHED_SUCCESSFULLY,
-      currentUserPrefences
-    )
-  );
+  next(new AppResponse(commonResponseMessages.FETCHED_SUCCESSFULLY, currentUserPrefences));
 });
 
 const updateUserPreferences = catchError(async (req, res, next) => {
-  let userId = req.userId;
+  const { userId } = req;
   const preferences = req.body;
 
   const result = await readFile();

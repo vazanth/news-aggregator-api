@@ -11,10 +11,7 @@ const getNews = catchError(async (req, res, next) => {
   const cachedNews = cacheManager.get(`${id}-AllNews`);
   if (cachedNews) {
     return next(
-      new AppResponse(
-        commonResponseMessages.FETCHED_SUCCESSFULLY,
-        JSON.parse(cachedNews)
-      )
+      new AppResponse(commonResponseMessages.FETCHED_SUCCESSFULLY, JSON.parse(cachedNews)),
     );
   }
 
@@ -22,9 +19,7 @@ const getNews = catchError(async (req, res, next) => {
   const result = await fetchAllNews(preferences.sources.join(', '));
   cacheManager.set(`${id}-AllNews`, JSON.stringify(result));
 
-  return next(
-    new AppResponse(commonResponseMessages.FETCHED_SUCCESSFULLY, result)
-  );
+  return next(new AppResponse(commonResponseMessages.FETCHED_SUCCESSFULLY, result));
 });
 
 const getTopHeadlines = catchError(async (req, res, next) => {
@@ -33,10 +28,7 @@ const getTopHeadlines = catchError(async (req, res, next) => {
   const cachedNews = cacheManager.get(`${id}-TopNews`);
   if (cachedNews) {
     return next(
-      new AppResponse(
-        commonResponseMessages.FETCHED_SUCCESSFULLY,
-        JSON.parse(cachedNews)
-      )
+      new AppResponse(commonResponseMessages.FETCHED_SUCCESSFULLY, JSON.parse(cachedNews)),
     );
   }
 
@@ -44,9 +36,7 @@ const getTopHeadlines = catchError(async (req, res, next) => {
   const result = await fetchTopHeadlines(preferences.categories.join(', '));
   cacheManager.set(`${id}-TopNews`, JSON.stringify(result));
 
-  return next(
-    new AppResponse(commonResponseMessages.FETCHED_SUCCESSFULLY, result)
-  );
+  return next(new AppResponse(commonResponseMessages.FETCHED_SUCCESSFULLY, result));
 });
 
 const getReadNews = catchError(async (req, res, next) => {
@@ -64,29 +54,15 @@ const getReadNews = catchError(async (req, res, next) => {
   const cachedNews = cacheManager.get(`${id}-AllNews`);
   if (cachedNews) {
     const parsedData = JSON.parse(cachedNews);
-    const filteredArticles = parsedData.filter((article) =>
-      readArticlesId.includes(article.id)
-    );
-    return next(
-      new AppResponse(
-        commonResponseMessages.FETCHED_SUCCESSFULLY,
-        filteredArticles
-      )
-    );
+    const filteredArticles = parsedData.filter((article) => readArticlesId.includes(article.id));
+    return next(new AppResponse(commonResponseMessages.FETCHED_SUCCESSFULLY, filteredArticles));
   }
 
   const result = await fetchAllNews(preferences.sources.join(', '));
   cacheManager.set(`${id}-AllNews`, JSON.stringify(result));
 
-  const filteredArticles = result.filter((article) =>
-    readArticlesId.includes(article.id)
-  );
-  return next(
-    new AppResponse(
-      commonResponseMessages.FETCHED_SUCCESSFULLY,
-      filteredArticles
-    )
-  );
+  const filteredArticles = result.filter((article) => readArticlesId.includes(article.id));
+  return next(new AppResponse(commonResponseMessages.FETCHED_SUCCESSFULLY, filteredArticles));
 });
 
 const getFavoriteNews = catchError(async (req, res, next) => {
@@ -105,33 +81,21 @@ const getFavoriteNews = catchError(async (req, res, next) => {
   if (cachedNews) {
     const parsedData = JSON.parse(cachedNews);
     const filteredArticles = parsedData.filter((article) =>
-      favoriteArticlesId.includes(article.id)
+      favoriteArticlesId.includes(article.id),
     );
-    return next(
-      new AppResponse(
-        commonResponseMessages.FETCHED_SUCCESSFULLY,
-        filteredArticles
-      )
-    );
+    return next(new AppResponse(commonResponseMessages.FETCHED_SUCCESSFULLY, filteredArticles));
   }
 
   const result = await fetchAllNews(preferences.sources.join(', '));
   cacheManager.set(`${id}-AllNews`, JSON.stringify(result));
 
-  const filteredArticles = result.filter((article) =>
-    favoriteArticlesId.includes(article.id)
-  );
-  return next(
-    new AppResponse(
-      commonResponseMessages.FETCHED_SUCCESSFULLY,
-      filteredArticles
-    )
-  );
+  const filteredArticles = result.filter((article) => favoriteArticlesId.includes(article.id));
+  return next(new AppResponse(commonResponseMessages.FETCHED_SUCCESSFULLY, filteredArticles));
 });
 
 const markArticleAsRead = catchError(async (req, res, next) => {
   const { newsId } = req.params;
-  const { id } = req?.user;
+  const { id } = req.user;
   const userData = await readFile();
   const userIndex = userData.users.findIndex((user) => user.id === id);
   const currentUser = userData.users[userIndex];
@@ -156,7 +120,7 @@ const markArticleAsRead = catchError(async (req, res, next) => {
 
 const makeArticleAsFavorite = catchError(async (req, res, next) => {
   const { newsId } = req.params;
-  const { id } = req?.user;
+  const { id } = req.user;
   const userData = await readFile();
   const userIndex = userData.users.findIndex((user) => user.id === id);
   const currentUser = userData.users[userIndex];
